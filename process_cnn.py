@@ -4,20 +4,26 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import os
 
-def create_train_test_splits_and_extract_images(input_csv, dataset_dir, img_size=(128, 128), test_size=0.2, subset_size=None, random_state=None):
-    # Step 1: Create train/test splits
+def create_train_val_test_splits_and_extract_images(input_csv, dataset_dir, img_size=(128, 128), test_size=0.2, val_size=0.1, subset_size=None, random_state=None):
+    # Step 1: Load dataset
     df = pd.read_csv(input_csv, index_col=0)
 
     if subset_size is not None:
         sample_size = min(subset_size, len(df))
         df = df.sample(n=sample_size, random_state=random_state)
 
-    train_df, test_df = train_test_split(df, test_size=test_size, stratify=df['label'], random_state=random_state)
-    
+    # Step 2: First split - Train (80%) & Temp (20%)
+    train_df, temp_df = train_test_split(df, test_size=test_size, stratify=df['label'], random_state=random_state)
+
+    # Step 3: Second split - Validation (10%) & Test (10%)
+    val_df, test_df = train_test_split(temp_df, test_size=0.5, stratify=temp_df['label'], random_state=random_state)
+
+    # Save splits
     train_df.to_csv('train.csv', index=True)
+    val_df.to_csv('val.csv', index=True)
     test_df.to_csv('test.csv', index=True)
 
-    # Step 2: Load images and save as NumPy arrays
+    # Step 4: Function to process images and save as NumPy arrays
     def process_split(split_df, output_npy_file):
         images = []
         for _, row in split_df.iterrows():
@@ -30,9 +36,14 @@ def create_train_test_splits_and_extract_images(input_csv, dataset_dir, img_size
         np.save(output_npy_file, images_array)
         return images_array.shape
 
+    # Step 5: Extract and save images
     print("Extracting training images...")
     train_shape = process_split(train_df, 'train_images.npy')
     print(f"Train images shape: {train_shape}")
+
+    print("Extracting validation images...")
+    val_shape = process_split(val_df, 'val_images.npy')
+    print(f"Validation images shape: {val_shape}")
 
     print("Extracting test images...")
     test_shape = process_split(test_df, 'test_images.npy')
@@ -41,12 +52,12 @@ def create_train_test_splits_and_extract_images(input_csv, dataset_dir, img_size
 if __name__ == '__main__':
     input_csv_path = "/Users/brittmerkus/Desktop/machine_learning/ML_project_180/datasets/train.csv"
     dataset_dir = "/Users/brittmerkus/Desktop/machine_learning/ML_project_180/datasets"
-    
-    create_train_test_splits_and_extract_images(
+
+    create_train_val_test_splits_and_extract_images(
         input_csv_path,
         dataset_dir,
         img_size=(128, 128),
-        test_size=0.2,
+        test_size=0.2,  # 20% initially split, later divided into val (10%) and test (10%)
         subset_size=2000,
         random_state=42
     )
