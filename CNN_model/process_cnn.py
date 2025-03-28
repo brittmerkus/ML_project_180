@@ -19,9 +19,9 @@ def create_train_val_test_splits_and_extract_images(input_csv, dataset_dir, img_
     val_df, test_df = train_test_split(temp_df, test_size=0.5, stratify=temp_df['label'], random_state=random_state)
 
     # Save splits
-    train_df.to_csv('train.csv', index=True)
-    val_df.to_csv('val.csv', index=True)
-    test_df.to_csv('test.csv', index=True)
+    train_df.to_csv('../train_data/cnn_train_img.csv', index=True)
+    test_df.to_csv('../test_data/cnn_test_img.csv', index=True)
+    val_df.to_csv('../val_data/cnn_val_img.csv', index=True)
 
     # Step 4: Function to process images and save as NumPy arrays
     def process_split(split_df, output_npy_file):
@@ -38,20 +38,20 @@ def create_train_val_test_splits_and_extract_images(input_csv, dataset_dir, img_
 
     # Step 5: Extract and save images
     print("Extracting training images...")
-    train_shape = process_split(train_df, 'train_images.npy')
+    train_shape = process_split(train_df, '../train_data/cnn_train_images.npy')
     print(f"Train images shape: {train_shape}")
 
     print("Extracting validation images...")
-    val_shape = process_split(val_df, 'val_images.npy')
+    val_shape = process_split(val_df, '../val_data/cnn_val_images.npy')
     print(f"Validation images shape: {val_shape}")
 
     print("Extracting test images...")
-    test_shape = process_split(test_df, 'test_images.npy')
+    test_shape = process_split(test_df, '../test_data/cnn_test_images.npy')
     print(f"Test images shape: {test_shape}")
 
 if __name__ == '__main__':
-    input_csv_path = "/Users/brittmerkus/Desktop/machine_learning/ML_project_180/datasets/train.csv"
-    dataset_dir = "/Users/brittmerkus/Desktop/machine_learning/ML_project_180/datasets"
+    input_csv_path = os.path.join(os.getcwd(), "../datasets/alessandrasala79/ai-vs-human-generated-dataset/versions/4/train.csv")
+    dataset_dir = os.path.join(os.getcwd(),"../datasets/alessandrasala79/ai-vs-human-generated-dataset/versions/4")
 
     create_train_val_test_splits_and_extract_images(
         input_csv_path,
